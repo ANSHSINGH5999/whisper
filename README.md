@@ -6,7 +6,7 @@
 
 ## Live Demo
 
-**[PREPROD DEMO URL — added after the frontend is deployed]**
+**https://whisper-midnight.vercel.app** (connect a Lace wallet set to Preprod; see [Prerequisites](#prerequisites))
 
 ## Contract Address
 
