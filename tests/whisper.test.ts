@@ -6,6 +6,7 @@ import {
   sampleContractAddress,
 } from '@midnight-ntwrk/compact-runtime';
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
+import { toHex } from '@midnight-ntwrk/midnight-js-utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Contract, ReportStatus, ledger, pureCircuits } from '../managed/whisper/contract/index.js';
 import { type WhisperPrivateState, freeSlots, randomSecret, witnesses } from '../src/utils/contract';
@@ -127,7 +128,7 @@ describe('Whisper contract', () => {
       pureCircuits.nullifier(aliceSk, 0n, 0n),
       pureCircuits.nullifier(aliceSk, 0n, 1n),
       pureCircuits.nullifier(aliceSk, 1n, 0n),
-    ].map((v) => Buffer.from(v).toString('hex'));
+    ].map(toHex);
     expect(new Set(values).size).toBe(values.length);
   });
 });
