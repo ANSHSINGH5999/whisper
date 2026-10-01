@@ -110,6 +110,11 @@ label { display: block; font-size: 0.8rem; color: var(--muted); margin: 0.8rem 0
 .status.s3 { color: var(--dim); }
 .actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
 
+/* fund wallet */
+.fund { margin: 0 0 1.5rem; }
+.fund ol { margin: 0.6rem 0 0.9rem; padding-left: 1.2rem; }
+.fund code { display: block; margin-top: 0.3rem; color: var(--fg); }
+
 /* tx stepper + alert */
 .stepper { border: 1px solid rgba(200, 169, 107, 0.3); border-radius: var(--radius); padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; background: rgba(200, 169, 107, 0.04); }
 .stepper ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }

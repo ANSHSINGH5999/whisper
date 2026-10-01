@@ -1,5 +1,6 @@
 import { AdminConsole } from './components/AdminConsole';
 import { AnonymousReport } from './components/AnonymousReport';
+import { FundWallet } from './components/FundWallet';
 import { Layout } from './components/Layout';
 import { MemberKey } from './components/MemberKey';
 import { OrgPicker } from './components/OrgPicker';
@@ -21,6 +22,7 @@ export default function App() {
           </button>
         </div>
       )}
+      <FundWallet m={m} />
       <TxStepper tx={m.tx} />
 
       {!m.wallet ? (

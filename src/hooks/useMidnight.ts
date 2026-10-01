@@ -69,6 +69,7 @@ export const useMidnight = () => {
   const [tx, setTx] = useState<TxState>(null);
   const [error, setError] = useState<string | null>(null);
   const [dust, setDust] = useState<bigint | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const providers = useRef<WhisperProviders | null>(null);
   const walletRef = useRef<ConnectedAPI | null>(null);
   const phaseRef = useRef<string>('preparing');
@@ -85,6 +86,7 @@ export const useMidnight = () => {
         setTx((t) => (t ? { ...t, phase } : t));
       });
       setDust(await readDust(api));
+      setWalletAddress((await api.getUnshieldedAddress()).unshieldedAddress);
       walletRef.current = api;
       setWallet(api);
     } catch (e) {
@@ -178,6 +180,8 @@ export const useMidnight = () => {
   return {
     wallet,
     dust,
+    walletAddress,
+    refreshDust: async () => walletRef.current && setDust(await readDust(walletRef.current)),
     connecting,
     connect,
     address,
