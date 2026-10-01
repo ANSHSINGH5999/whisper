@@ -120,8 +120,9 @@ export const useMidnight = () => {
   /** Restore a backed-up key (e.g. on a new device). */
   const importKey = async (hex: string) => {
     if (!address || !providers.current) return;
-    const sk = fromHex(hex.trim().replace(/^0x/, ''));
-    if (sk.length !== 32) return setError('A Whisper key is 64 hex characters.');
+    const clean = hex.trim().replace(/^0x/, '');
+    if (!/^[0-9a-f]{64}$/i.test(clean)) return setError('A Whisper key is 64 hex characters.');
+    const sk = fromHex(clean);
     await providers.current.privateStateProvider.set(whisperPrivateStateId, { secretKey: sk });
     keyStore.save(address, sk);
     setSecretKey(sk);
@@ -169,8 +170,9 @@ export const useMidnight = () => {
       }),
     addMember: (commitmentHex: string) =>
       run('Registering member', async () => {
-        const c = fromHex(commitmentHex.trim().replace(/^0x/, ''));
-        if (c.length !== 32) throw new Error('A member code is 64 hex characters.');
+        const clean = commitmentHex.trim().replace(/^0x/, '');
+        if (!/^[0-9a-f]{64}$/i.test(clean)) throw new Error('A member code is 64 hex characters.');
+        const c = fromHex(clean);
         await contract!.callTx.addMember(c);
         return true;
       }),

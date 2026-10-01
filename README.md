@@ -40,7 +40,15 @@ This needs Midnight specifically: the product depends on private inputs (the key
 
 `disclose()` appears only on: the computed Merkle root (shared by every member), the nullifier, the report text, the admin hash at deploy time, member codes being added, and the report id and status being set. See the header comment in [`contracts/whisper.compact`](contracts/whisper.compact).
 
-**Not hidden:** the content and writing style of a report, and when it was submitted.
+**Fees:** the reporter's wallet pays fees in DUST, which is a shielded resource on Midnight, so paying the fee doesn't attach a public address to the report.
+
+### Known limitations
+
+- **The anonymity set is the member list.** With only 2 members, a report narrows the author down to 1 of 2. Anonymity is meaningful only once an organisation has registered enough members.
+- **Content and timing aren't hidden.** The report text, its writing style, and when it lands (for example, right after the admin adds someone) can all identify the author.
+- **The admin is trusted to register real members.** The admin could register codes they control (sybils), although every registration is visible as a public on-chain event.
+- **No admin key rotation in the MVP**, and the tree holds at most 1,024 members (depth 10).
+- **Keys are stored in browser localStorage.** Back them up; clearing site data deletes them.
 
 ## Tech Stack
 
