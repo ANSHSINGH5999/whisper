@@ -40,8 +40,16 @@ const keyStore = {
   },
 };
 
+/** Spendable DUST, or null if the wallet can't report it. */
+const readDust = (api: ConnectedAPI) =>
+  api.getDustBalance().then(
+    (d) => d.balance,
+    () => null,
+  );
+
 export const friendlyError = (e: unknown): string => {
-  console.error('[whisper]', e);
+  const props = e && typeof e === 'object' ? Object.getOwnPropertyNames(e) : [];
+  console.error('[whisper]', e, JSON.stringify(e, props), (e as { cause?: unknown })?.cause);
   const w = e as { code?: string; reason?: string; message?: string };
   if (w?.code === 'Rejected' || w?.code === 'PermissionRejected') return 'You declined the request in your wallet.';
   if (w?.code === 'Disconnected') return 'The wallet disconnected. Reconnect Lace and try again.';
@@ -60,7 +68,10 @@ export const useMidnight = () => {
   const [secretKey, setSecretKey] = useState<Uint8Array | null>(null);
   const [tx, setTx] = useState<TxState>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dust, setDust] = useState<bigint | null>(null);
   const providers = useRef<WhisperProviders | null>(null);
+  const walletRef = useRef<ConnectedAPI | null>(null);
+  const phaseRef = useRef<string>('preparing');
 
   const address = contract?.deployTxData.public.contractAddress ?? null;
 
@@ -69,7 +80,12 @@ export const useMidnight = () => {
     setError(null);
     try {
       const api = await connectWallet(NETWORK_ID);
-      providers.current = await buildProviders(api, (phase) => setTx((t) => (t ? { ...t, phase } : t)));
+      providers.current = await buildProviders(api, (phase) => {
+        phaseRef.current = phase;
+        setTx((t) => (t ? { ...t, phase } : t));
+      });
+      setDust(await readDust(api));
+      walletRef.current = api;
       setWallet(api);
     } catch (e) {
       setError(friendlyError(e));
@@ -80,12 +96,20 @@ export const useMidnight = () => {
 
   /** Runs an on-chain action with live phase tracking and user-readable errors. */
   const run = useCallback(async <T>(label: string, fn: (p: WhisperProviders) => Promise<T>): Promise<T | undefined> => {
-    if (!providers.current) return;
+    if (!providers.current || !walletRef.current) return;
     setError(null);
+    const balance = await readDust(walletRef.current);
+    setDust(balance);
+    if (balance === 0n) {
+      setError('Your wallet has 0 DUST, so it cannot pay fees. Get tNIGHT from the Preprod faucet and turn on DUST generation in Lace.');
+      return;
+    }
+    phaseRef.current = 'preparing';
     setTx({ label, phase: 'preparing' });
     try {
       return await fn(providers.current);
     } catch (e) {
+      console.error(`[whisper] "${label}" failed during phase: ${phaseRef.current}`);
       setError(friendlyError(e));
     } finally {
       setTx(null);
@@ -153,6 +177,7 @@ export const useMidnight = () => {
 
   return {
     wallet,
+    dust,
     connecting,
     connect,
     address,
