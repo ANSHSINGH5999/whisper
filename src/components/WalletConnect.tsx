@@ -10,7 +10,7 @@ export function WalletConnect({ m }: { m: Midnight }) {
   }
   return (
     <button className="btn" onClick={m.connect} disabled={m.connecting}>
-      {m.connecting ? 'Connecting…' : 'Connect Lace →'}
+      {m.connecting ? 'Approve in Lace…' : 'Connect Lace →'}
     </button>
   );
 }
