@@ -41,11 +41,15 @@ const keyStore = {
 };
 
 export const friendlyError = (e: unknown): string => {
-  const msg = e instanceof Error ? e.message : String(e);
+  console.error('[whisper]', e);
+  const w = e as { code?: string; reason?: string; message?: string };
+  if (w?.code === 'Rejected' || w?.code === 'PermissionRejected') return 'You declined the request in your wallet.';
+  if (w?.code === 'Disconnected') return 'The wallet disconnected. Reconnect Lace and try again.';
+  const msg = w?.reason || w?.message || String(e) || 'Unknown error';
   if (/reject|denied|cancel/i.test(msg)) return 'You declined the request in your wallet.';
   if (/failed to fetch|ECONNREFUSED|6300/i.test(msg)) return 'Could not reach the proof server. Is it running (see Setup)?';
   if (/insufficient|not enough|dust/i.test(msg)) return 'Not enough tDUST to pay fees. Generate DUST from tNIGHT in Lace.';
-  return msg.replace(/^Error:\s*/, '');
+  return msg.replace(/^Error:\s*/, '') || 'Transaction failed. Check the browser console for details.';
 };
 
 export const useMidnight = () => {
