@@ -1,0 +1,139 @@
+// ============================================================================
+// Whisper — anonymous insider reporting on Midnight
+// ============================================================================
+//
+// PRIVACY MODEL
+//
+//   Actors
+//     - Admin:  the organisation's operator. Identified on-chain only by
+//               hash(adminSecret). Registers members and triages reports.
+//     - Member: an insider (employee, contractor, student...). Holds a random
+//               32-byte secret that never leaves their device.
+//
+//   PUBLIC (ledger, visible to anyone)
+//     - org name, admin key hash, current reporting round
+//     - the member Merkle tree (opaque commitments) and member count
+//     - spent nullifiers (unlinkable to commitments or to each other)
+//     - report text + status, and the round each report was filed in
+//
+//   PRIVATE (witnesses, never leave the device)
+//     - the member/admin secret key
+//     - which leaf of the member tree belongs to the reporter (Merkle path)
+//     - which of the per-round report slots the reporter is using
+//
+//   WHAT A REPORT PROVES (zero-knowledge)
+//     "I hold the secret behind SOME commitment in the member tree, and I have
+//      not used this report slot in this round" — without revealing which
+//      member, so the admin cannot link a report to the person they invited,
+//      and two reports from the same person cannot be linked to each other.
+//
+//   disclose() is used ONLY for:
+//     - Merkle root check (a root is shared by every member -> reveals nothing)
+//     - the nullifier (domain-separated hash, unlinkable to the commitment)
+//     - the report text (the whole point is that the org can read it)
+//     - admin-key hash at deployment and member commitments being added
+//
+//   Not hidden: report text itself (writing style can identify people),
+//   the time a report lands, and the total number of members.
+// ============================================================================
+
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+export enum ReportStatus { OPEN, ACKNOWLEDGED, RESOLVED, DISMISSED }
+
+export struct Report {
+  round: Uint<64>,
+  body: Opaque<"string">,
+  status: ReportStatus
+}
+
+// Each member may file up to this many reports per round (slots 0..N-1).
+export pure circuit maxReportsPerRound(): Uint<8> {
+  return 3;
+}
+
+export ledger orgName: Opaque<"string">;
+export ledger admin: Bytes<32>;
+export ledger members: HistoricMerkleTree<10, Bytes<32>>;
+export ledger memberCount: Counter;
+export ledger round: Counter;
+export ledger nullifiers: Set<Bytes<32>>;
+export ledger reports: Map<Uint<64>, Report>;
+export ledger reportCount: Counter;
+
+witness secretKey(): Bytes<32>;
+witness memberPath(commitment: Bytes<32>): MerkleTreePath<10, Bytes<32>>;
+
+constructor(name: Opaque<"string">) {
+  orgName = disclose(name);
+  admin = disclose(adminKey(secretKey()));
+}
+
+// --- key derivations (distinct domains keep them unlinkable) ---------------
+
+export pure circuit adminKey(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "whisper:admin:"), sk]);
+}
+
+export pure circuit memberCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "whisper:member:"), sk]);
+}
+
+export pure circuit nullifier(sk: Bytes<32>, rnd: Uint<64>, slot: Uint<8>): Bytes<32> {
+  return persistentHash<Vector<4, Bytes<32>>>([
+    pad(32, "whisper:nullifier:"),
+    sk,
+    rnd as Field as Bytes<32>,
+    slot as Field as Bytes<32>
+  ]);
+}
+
+// --- member actions ---------------------------------------------------------
+
+export circuit submitReport(body: Opaque<"string">, slot: Uint<8>): Uint<64> {
+  assert(slot < maxReportsPerRound(), "Report slot out of range");
+
+  const sk = secretKey();
+  const commitment = memberCommitment(sk);
+  const path = memberPath(commitment);
+
+  // Bind the path to this prover's own commitment, then check the root.
+  assert(path.leaf == commitment, "Membership path does not match your key");
+  assert(members.checkRoot(disclose(merkleTreePathRoot<10, Bytes<32>>(path))), "Not a registered member");
+
+  const nul = disclose(nullifier(sk, round, slot));
+  assert(!nullifiers.member(nul), "Report slot already used this round");
+  nullifiers.insert(nul);
+
+  const id = reportCount;
+  reports.insert(id, Report { round: round, body: disclose(body), status: ReportStatus.OPEN });
+  reportCount.increment(1);
+  return id;
+}
+
+// --- admin actions ----------------------------------------------------------
+
+circuit assertAdmin(): [] {
+  assert(admin == adminKey(secretKey()), "Only the admin can do this");
+}
+
+export circuit addMember(commitment: Bytes<32>): [] {
+  assertAdmin();
+  members.insert(disclose(commitment));
+  memberCount.increment(1);
+}
+
+export circuit setStatus(id: Uint<64>, status: ReportStatus): [] {
+  assertAdmin();
+  const reportId = disclose(id);
+  assert(reports.member(reportId), "Unknown report");
+  const r = reports.lookup(reportId);
+  reports.insert(reportId, Report { round: r.round, body: r.body, status: disclose(status) });
+}
+
+export circuit newRound(): [] {
+  assertAdmin();
+  round.increment(1);
+}
