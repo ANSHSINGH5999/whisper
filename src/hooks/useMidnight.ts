@@ -165,12 +165,14 @@ export const useMidnight = () => {
         const slot = derived?.freeSlots[0];
         if (slot === undefined) throw new Error('You have used all your reports for this round.');
         await contract!.callTx.submitReport(body, BigInt(slot));
+        return true;
       }),
     addMember: (commitmentHex: string) =>
       run('Registering member', async () => {
         const c = fromHex(commitmentHex.trim().replace(/^0x/, ''));
         if (c.length !== 32) throw new Error('A member code is 64 hex characters.');
         await contract!.callTx.addMember(c);
+        return true;
       }),
     setStatus: (id: bigint, status: ReportStatus) =>
       run('Updating report', async () => void (await contract!.callTx.setStatus(id, status))),
