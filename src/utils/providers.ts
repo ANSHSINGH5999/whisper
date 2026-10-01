@@ -11,10 +11,13 @@ import type { WhisperCircuitKeys, WhisperPrivateState, WhisperProviders } from '
 /** Real stages of a Midnight transaction, reported as each provider is invoked. */
 export type TxPhase = 'proving' | 'balancing' | 'submitting' | 'confirming';
 
-const findWallet = (): InitialAPI | undefined =>
-  Object.values(window.midnight ?? {}).find(
+// Several Midnight wallets can be injected at once; prefer Lace, fall back to any compatible one.
+const findWallet = (): InitialAPI | undefined => {
+  const compatible = Object.values(window.midnight ?? {}).filter(
     (w): w is InitialAPI => !!w && typeof w === 'object' && 'apiVersion' in w && semver.satisfies(w.apiVersion, '4.x'),
   );
+  return compatible.find((w) => w.name.toLowerCase() === 'lace') ?? compatible[0];
+};
 
 export const connectWallet = async (networkId: string): Promise<ConnectedAPI> => {
   // Extensions inject window.midnight shortly after page load.
