@@ -1,5 +1,6 @@
 import type { Midnight } from '../hooks/useMidnight';
 import { delay } from './Layout';
+import { ConnectButton } from './WalletConnect';
 
 export function Intro({ m }: { m: Midnight }) {
   return (
@@ -19,11 +20,9 @@ export function Intro({ m }: { m: Midnight }) {
         without revealing who they are. Not to the public. Not to the admin who invited them.
       </p>
       <div className="hero-actions">
-        <button className="btn hero appear appear--btn" style={delay('0.96s')} onClick={m.connect} disabled={m.connecting}>
-          {m.connecting ? 'Approve in Lace…' : 'Connect Lace →'}
-        </button>
+        <ConnectButton m={m} className="hero appear appear--btn" style={delay('0.96s')} />
       </div>
-      <p className="hero-note appear appear--soft" style={delay('1.1s')}>Use a Lace wallet set to Preprod.</p>
+      <p className="hero-note appear appear--soft" style={delay('1.1s')}>Works with Lace or 1AM, set to Preprod.</p>
     </section>
   );
 }

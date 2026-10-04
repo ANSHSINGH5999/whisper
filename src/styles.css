@@ -277,3 +277,12 @@ label { display: block; font-size: 0.8rem; color: var(--muted); margin: 0.8rem 0
   *, *::before, *::after { transition: none !important; animation: none !important; }
   .appear, .hero-photo, .hero h1 em, .badge-star { opacity: 1; transform: none; clip-path: none; filter: none; }
 }
+
+/* wallet chooser */
+.modal { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); }
+.modal-card { width: 100%; max-width: 380px; background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; padding: 24px; text-align: left; }
+.modal-card .btn { margin-top: 16px; }
+.wallet-list { list-style: none; display: grid; gap: 8px; margin-top: 12px; }
+.wallet-list button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; color: #fff; font-size: 15px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); border-radius: 8px; background: rgba(255, 255, 255, 0.04); transition: border-color 0.25s, background 0.25s; }
+.wallet-list button:hover { border-color: rgba(220, 230, 255, 0.7); background: rgba(255, 255, 255, 0.08); }
+.wallet-list img { border-radius: 6px; }

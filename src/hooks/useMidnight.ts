@@ -14,7 +14,7 @@ import {
   randomSecret,
   whisperPrivateStateId,
 } from '../utils/contract';
-import { type TxPhase, buildProviders, connectWallet } from '../utils/providers';
+import { type DetectedWallet, type TxPhase, buildProviders, connectWallet, detectWallets } from '../utils/providers';
 
 const NETWORK_ID = import.meta.env.VITE_NETWORK_ID as string;
 export const DEFAULT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS as string | undefined) ?? '';
@@ -52,17 +52,18 @@ export const friendlyError = (e: unknown): string => {
   console.error('[whisper]', e, JSON.stringify(e, props), (e as { cause?: unknown })?.cause);
   const w = e as { code?: string; reason?: string; message?: string };
   if (w?.code === 'Rejected' || w?.code === 'PermissionRejected') return 'You declined the request in your wallet.';
-  if (w?.code === 'Disconnected') return 'The wallet disconnected. Reconnect Lace and try again.';
+  if (w?.code === 'Disconnected') return 'The wallet disconnected. Reconnect your wallet and try again.';
   const msg = w?.reason || w?.message || String(e) || 'Unknown error';
   if (/reject|denied|cancel/i.test(msg)) return 'You declined the request in your wallet.';
   if (/failed to fetch|ECONNREFUSED|6300/i.test(msg)) return 'Could not reach the proof server. Is it running (see Setup)?';
-  if (/insufficient|not enough|dust/i.test(msg)) return 'Not enough tDUST to pay fees. Generate DUST from tNIGHT in Lace.';
+  if (/insufficient|not enough|dust/i.test(msg)) return 'Not enough tDUST to pay fees. Generate DUST from tNIGHT in your wallet.';
   return msg.replace(/^Error:\s*/, '') || 'Transaction failed. Check the browser console for details.';
 };
 
 export const useMidnight = () => {
   const [wallet, setWallet] = useState<ConnectedAPI | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [walletName, setWalletName] = useState<string | null>(null);
   const [contract, setContract] = useState<DeployedWhisper | null>(null);
   const [ledger, setLedger] = useState<Ledger | null>(null);
   const [secretKey, setSecretKey] = useState<Uint8Array | null>(null);
@@ -76,11 +77,11 @@ export const useMidnight = () => {
 
   const address = contract?.deployTxData.public.contractAddress ?? null;
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (w: DetectedWallet) => {
     setConnecting(true);
     setError(null);
     try {
-      const api = await connectWallet(NETWORK_ID);
+      const api = await connectWallet(NETWORK_ID, w.id);
       providers.current = await buildProviders(api, (phase) => {
         phaseRef.current = phase;
         setTx((t) => (t ? { ...t, phase } : t));
@@ -88,6 +89,7 @@ export const useMidnight = () => {
       setDust(await readDust(api));
       setWalletAddress((await api.getUnshieldedAddress()).unshieldedAddress);
       walletRef.current = api;
+      setWalletName(w.name);
       setWallet(api);
     } catch (e) {
       setError(friendlyError(e));
@@ -103,7 +105,7 @@ export const useMidnight = () => {
     const balance = await readDust(walletRef.current);
     setDust(balance);
     if (balance === 0n) {
-      setError('Your wallet has 0 DUST, so it cannot pay fees. Get tNIGHT from the Preprod faucet and turn on DUST generation in Lace.');
+      setError('Your wallet has 0 DUST, so it cannot pay fees. Get tNIGHT from the Preprod faucet and turn on DUST generation in your wallet.');
       return;
     }
     phaseRef.current = 'preparing';
@@ -184,6 +186,8 @@ export const useMidnight = () => {
     refreshDust: async () => walletRef.current && setDust(await readDust(walletRef.current)),
     connecting,
     connect,
+    detectWallets,
+    walletName,
     address,
     ledger,
     secretKey: secretKey ? toHex(secretKey) : null,

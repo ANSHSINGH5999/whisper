@@ -12,7 +12,7 @@ export function FundWallet({ m }: { m: Midnight }) {
           <a href="https://faucet.preprod.midnight.network" target="_blank" rel="noreferrer">Preprod faucet</a>:
           <code className="mono">{m.walletAddress}</code>
         </li>
-        <li>In Lace, turn on DUST generation for that tNIGHT. DUST builds up over a few minutes.</li>
+        <li>In your wallet, turn on DUST generation for that tNIGHT. DUST builds up over a few minutes.</li>
       </ol>
       <button className="btn ghost sm" onClick={m.refreshDust}>Check balance again</button>
     </section>

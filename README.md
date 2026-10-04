@@ -57,7 +57,7 @@ This needs Midnight specifically: the product depends on private inputs (the key
 | Smart contract | Compact (language 0.23, compiler 0.31.1) |
 | Contract runtime / tests | `@midnight-ntwrk/compact-runtime` 0.16, Vitest |
 | dApp SDK | Midnight.js 4.1.1 (contracts, indexer, proof provider, fetch ZK config) |
-| Wallet | Lace via DApp Connector API 4 |
+| Wallet | Lace or 1AM via DApp Connector API 4 |
 | Frontend | React 19, TypeScript, Vite 8 |
 | Proving | Midnight proof server 8.0.3 (Docker) |
 | CI | GitHub Actions + `midnightntwrk/setup-compact-action` |
@@ -74,7 +74,7 @@ tests/whisper.test.ts       ← contract simulator tests
 
 ## Prerequisites
 
-- [Lace wallet](https://chromewebstore.google.com/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk) with Midnight enabled, network set to **Preprod**, funded from the [faucet](https://faucet.preprod.midnight.network) with DUST generation on
+- [Lace](https://chromewebstore.google.com/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk) or 1AM wallet with Midnight enabled, network set to **Preprod**, funded from the [faucet](https://faucet.preprod.midnight.network) with DUST generation on
 - **Node.js v22+** (v24 recommended)
 - **Docker**, for the proof server
 - **Compact compiler 0.31.1**. This is only needed if you change the contract, since `managed/` is committed. Install with `curl --proto '=https' --tlsv1.2 -LsSf https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh`, then run `compact update 0.31.1`
@@ -99,7 +99,7 @@ tests/whisper.test.ts       ← contract simulator tests
    ```bash
    npm run dev
    ```
-5. Open http://localhost:5173, click **Connect Lace**, then either open an existing organisation by contract address or deploy your own.
+5. Open http://localhost:5173, click **Connect wallet** (pick Lace or 1AM), then either open an existing organisation by contract address or deploy your own.
 
 To pre-fill the contract address, set `VITE_CONTRACT_ADDRESS` in `.env.preprod`.
 
