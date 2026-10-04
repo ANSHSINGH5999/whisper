@@ -1,6 +1,7 @@
 import { AdminConsole } from './components/AdminConsole';
 import { AnonymousReport } from './components/AnonymousReport';
 import { FundWallet } from './components/FundWallet';
+import { HeroStats, Intro } from './components/Landing';
 import { Layout } from './components/Layout';
 import { MemberKey } from './components/MemberKey';
 import { OrgPicker } from './components/OrgPicker';
@@ -13,7 +14,7 @@ export default function App() {
   const m = useMidnight();
 
   return (
-    <Layout wallet={<WalletConnect m={m} />}>
+    <Layout wallet={<WalletConnect m={m} />} landing={!m.wallet} stats={<HeroStats />}>
       {m.error && (
         <div className="alert" role="alert">
           <span>{m.error}</span>
@@ -26,7 +27,7 @@ export default function App() {
       <TxStepper tx={m.tx} />
 
       {!m.wallet ? (
-        <Intro />
+        <Intro m={m} />
       ) : !m.address ? (
         <OrgPicker m={m} />
       ) : !m.ledger || !m.me ? (
@@ -51,28 +52,5 @@ export default function App() {
         </div>
       )}
     </Layout>
-  );
-}
-
-function Intro() {
-  return (
-    <section className="hero">
-      <p className="eyebrow">Anonymous insider reporting · Midnight Preprod</p>
-      <h1>
-        Speak up.
-        <br />
-        <em>Stay unnamed.</em>
-      </h1>
-      <p className="lede">
-        Whisper lets verified members of an organisation report wrongdoing with a zero-knowledge proof that they belong —
-        without revealing who they are. Not to the public. Not to the admin who invited them.
-      </p>
-      <ol className="how">
-        <li><b>Join</b>Your key is generated on your device. You hand the admin a one-way code, never the key.</li>
-        <li><b>Prove</b>Your browser proves “I’m one of the registered members” in zero knowledge.</li>
-        <li><b>Report</b>Only the report text and an unlinkable one-time tag reach the chain.</li>
-      </ol>
-      <p className="muted small">Connect a Lace wallet set to Preprod to begin.</p>
-    </section>
   );
 }
