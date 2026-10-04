@@ -54,6 +54,7 @@ export const friendlyError = (e: unknown): string => {
   if (w?.code === 'Rejected' || w?.code === 'PermissionRejected') return 'You declined the request in your wallet.';
   if (w?.code === 'Disconnected') return 'The wallet disconnected. Reconnect your wallet and try again.';
   const msg = w?.reason || w?.message || String(e) || 'Unknown error';
+  if (/custom error: 171|OutOfDustValidityWindow/i.test(msg)) return 'Your wallet\'s DUST timestamp is out of date (its indexer is behind the chain). Wait a few minutes for the wallet to resync, then try again, or use another wallet.';
   if (/wallet ui disconnected/i.test(msg)) return 'The wallet approval window closed before you approved. Try again and keep the wallet popup open until it finishes, or connect with another wallet (Lace).';
   if (/reject|denied|cancel/i.test(msg)) return 'You declined the request in your wallet.';
   if (/failed to fetch|ECONNREFUSED|6300/i.test(msg)) return 'Could not reach the proof server. Is it running (see Setup)?';
