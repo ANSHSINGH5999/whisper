@@ -47,6 +47,24 @@ const readDust = (api: ConnectedAPI) =>
     () => null,
   );
 
+/** Effect's FiberFailure hides the node's real reason under symbol keys; collect every message in the chain. */
+const deepMessages = (root: unknown, depth = 0, seen = new Set<unknown>()): string[] => {
+  if (!root || typeof root !== 'object' || depth > 8 || seen.has(root)) return [];
+  seen.add(root);
+  const out: string[] = [];
+  for (const key of Reflect.ownKeys(root)) {
+    let v: unknown;
+    try {
+      v = (root as Record<PropertyKey, unknown>)[key];
+    } catch {
+      continue;
+    }
+    if (typeof v === 'string' && /message|reason|error|_tag|defect/i.test(String(key))) out.push(v);
+    else if (v && typeof v === 'object') out.push(...deepMessages(v, depth + 1, seen));
+  }
+  return out;
+};
+
 export const friendlyError = (e: unknown): string => {
   const props = e && typeof e === 'object' ? Object.getOwnPropertyNames(e) : [];
   console.error('[whisper]', e, JSON.stringify(e, props), (e as { cause?: unknown })?.cause);
@@ -55,8 +73,8 @@ export const friendlyError = (e: unknown): string => {
   if (w?.code === 'Disconnected') return 'The wallet disconnected. Reconnect your wallet and try again.';
   const msg = w?.reason || w?.message || String(e) || 'Unknown error';
   if (/SubmissionError/.test(msg)) {
-    const cause = JSON.stringify((e as { cause?: unknown })?.cause, Object.getOwnPropertyNames((e as { cause?: object })?.cause ?? {}));
-    if (cause && cause !== '{}' && cause !== 'undefined') return `${msg.replace(/^Error:\s*/, '')} — node said: ${cause.slice(0, 400)}`;
+    const inner = deepMessages(e).filter((m) => m && !msg.includes(m)).slice(0, 4).join(' | ');
+    if (inner) return `${msg.replace(/^Error:\s*/, '')} — node said: ${inner.slice(0, 500)}`;
   }
   if (/custom error: 171|OutOfDustValidityWindow/i.test(msg)) return 'Your wallet\'s DUST timestamp is out of date (its indexer is behind the chain). Wait a few minutes for the wallet to resync, then try again, or use another wallet.';
   if (/wallet ui disconnected/i.test(msg)) return 'The wallet approval window closed before you approved. Try again and keep the wallet popup open until it finishes, or connect with another wallet (Lace).';
