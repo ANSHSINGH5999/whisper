@@ -8,11 +8,12 @@ const HERO_VIDEO =
 interface LayoutProps {
   wallet: ReactNode;
   landing?: boolean;
+  wide?: boolean;
   stats?: ReactNode;
   children: ReactNode;
 }
 
-export function Layout({ wallet, landing = false, stats, children }: LayoutProps) {
+export function Layout({ wallet, landing = false, wide = false, stats, children }: LayoutProps) {
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>('.appear:not(.is-in), .hero-photo:not(.is-in)');
     els.forEach((el) => el.addEventListener('animationend', () => el.classList.add('is-in'), { once: true }));
@@ -23,7 +24,7 @@ export function Layout({ wallet, landing = false, stats, children }: LayoutProps
         if (!running) els.forEach((el) => el.classList.add('is-in'));
       }),
     );
-  }, [landing]);
+  }, [landing, wide]);
 
   return (
     <>
@@ -41,7 +42,7 @@ export function Layout({ wallet, landing = false, stats, children }: LayoutProps
           <span className="pill appear appear--soft" style={delay('0.28s')}>Preprod</span>
           <div className="nav-end appear appear--scale" style={delay('0.34s')}>{wallet}</div>
         </header>
-        <main className={landing ? 'hero-main' : 'main'}>{children}</main>
+        <main className={landing ? 'hero-main' : wide ? 'main-wide' : 'main'}>{children}</main>
         {landing ? (
           stats
         ) : (

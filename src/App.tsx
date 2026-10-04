@@ -1,4 +1,5 @@
 import { AdminConsole } from './components/AdminConsole';
+import { ConnectedHero, Statement } from './components/Connected';
 import { AnonymousReport } from './components/AnonymousReport';
 import { FundWallet } from './components/FundWallet';
 import { HeroStats, Intro } from './components/Landing';
@@ -13,8 +14,8 @@ import { useMidnight } from './hooks/useMidnight';
 export default function App() {
   const m = useMidnight();
 
-  return (
-    <Layout wallet={<WalletConnect m={m} />} landing={!m.wallet} stats={<HeroStats />}>
+  const notices = (
+    <>
       {m.error && (
         <div className="alert" role="alert">
           <span>{m.error}</span>
@@ -25,12 +26,27 @@ export default function App() {
       )}
       <FundWallet m={m} />
       <TxStepper tx={m.tx} />
+    </>
+  );
+  const picking = !!m.wallet && !m.address;
 
+  return (
+    <Layout wallet={<WalletConnect m={m} />} landing={!m.wallet} wide={picking} stats={<HeroStats />}>
+      {picking ? (
+        <>
+          <div className="wide-pad">{notices}</div>
+          <ConnectedHero m={m} />
+          <section id="start" className="wide-pad">
+            <OrgPicker m={m} />
+          </section>
+          <Statement />
+        </>
+      ) : (
+        notices
+      )}
       {!m.wallet ? (
         <Intro m={m} />
-      ) : !m.address ? (
-        <OrgPicker m={m} />
-      ) : !m.ledger || !m.me ? (
+      ) : !m.address ? null : !m.ledger || !m.me ? (
         <p className="muted center pad">Syncing organisation state from the Preprod indexer…</p>
       ) : (
         <div className="workspace">
