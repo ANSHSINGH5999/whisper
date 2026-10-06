@@ -16,6 +16,13 @@
 
 Deployed in transaction `75848e5811168ed2f1c381c74d0e5d85a02199f3922039e1b81e53ed4c132210` (block 2,862,682). The live demo opens this organisation by default; you can also deploy your own from the app.
 
+**Exercised end to end on Preprod:** this organisation has a registered member (`addMember`), an anonymous ZK-proven report (`submitReport`, shown as "Filed by: a verified member"), and an admin status update (`setStatus`, tx `60889052d03f1bd045c6cf70547db7fd0d72a0e7aaab269050d2569d10a6a38b`, block 2,862,815). You can check the latest action on the Preprod indexer:
+
+```bash
+curl -s https://indexer.preprod.midnight.network/api/v4/graphql -H 'content-type: application/json' \
+  -d '{"query":"{ contractAction(address: \"70722381e786ad51f97218c9ee04474b1dc0d50e866eb252d06e9a6c97e6f585\") { __typename transaction { hash block { height } } } }"}'
+```
+
 ## What This Product Does
 
 People inside organisations are the first to see fraud, safety violations and abuse, yet most never report it because they fear retaliation. "Anonymous" hotlines don't solve this. The operator can usually see who was invited or who logged in, and because nothing proves the reporter is an insider, these channels fill up with spam and fake claims that nobody takes seriously.
