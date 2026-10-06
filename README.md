@@ -12,7 +12,9 @@
 
 | Network | Address |
 |---------|---------|
-| Preprod | `[ADDRESS — added after deploy]` |
+| Preprod | `70722381e786ad51f97218c9ee04474b1dc0d50e866eb252d06e9a6c97e6f585` |
+
+Deployed in transaction `75848e5811168ed2f1c381c74d0e5d85a02199f3922039e1b81e53ed4c132210` (block 2,862,682). The live demo opens this organisation by default; you can also deploy your own from the app.
 
 ## What This Product Does
 

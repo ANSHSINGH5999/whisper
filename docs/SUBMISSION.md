@@ -4,7 +4,7 @@
 |---|---|---|
 | Public GitHub repo | https://github.com/ANSHSINGH5999/whisper | ✓ pushed |
 | Live Preprod demo | https://whisper-midnight.vercel.app | ✓ live |
-| Contract address (Preprod) | _fill after deploy_ | pending |
+| Contract address (Preprod) | `70722381e786ad51f97218c9ee04474b1dc0d50e866eb252d06e9a6c97e6f585` | ✓ deployed (tx `75848e581116…`, block 2,862,682) |
 | CI/CD | https://github.com/ANSHSINGH5999/whisper/actions (badge in README) | ✓ passing |
 | Product X profile | _fill after creating account_ | pending |
 | Demo video | _fill after recording_ (see [DEMO_SCRIPT.md](DEMO_SCRIPT.md)) | pending |
