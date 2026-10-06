@@ -73,7 +73,7 @@ export const friendlyError = (e: unknown): string => {
   if (w?.code === 'Disconnected') return 'The wallet disconnected. Reconnect your wallet and try again.';
   const msg = w?.reason || w?.message || String(e) || 'Unknown error';
   if (/custom error: 171|OutOfDustValidityWindow/i.test(msg)) return 'Your wallet\'s DUST timestamp is out of date (its indexer is behind the chain). Wait a few minutes for the wallet to resync, then try again, or use another wallet.';
-  if (/wallet ui disconnected/i.test(msg)) return 'The wallet approval window closed before you approved. Try again and keep the wallet popup open until it finishes, or connect with another wallet (Lace).';
+  if (/wallet ui disconnected|was shutdown|can no longer be used/i.test(msg)) return 'The wallet approval window closed before you approved. Try again and keep the wallet popup open until it finishes, or connect with another wallet (Lace).';
   if (/SubmissionError/.test(msg)) {
     const inner = deepMessages(e).filter((m) => m && !msg.includes(m)).slice(0, 4).join(' | ');
     if (inner) return `${msg.replace(/^Error:\s*/, '')} — node said: ${inner.slice(0, 500)}`;
